@@ -1,0 +1,44 @@
+# Dependencias
+node_modules/
+.env
+
+# Scripts de desarrollo y testing
+scripts/
+*.test.js
+*.spec.js
+
+# Archivos de configuración local
+config/local.js
+config/development.js
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos temporales
+tmp/
+temp/
+.tmp/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de backup
+*.bak
+*.backup
+
+# Archivos de uploads (opcional - si no quieres subir contenido de usuarios)
+# uploads/
+
+# Archivos de package-lock (opcional - algunos prefieren no subirlo)
+# package-lock.json

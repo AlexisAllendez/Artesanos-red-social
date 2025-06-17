@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed - Red Social de Artesanos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/feed.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/feed">
+                <i class="fas fa-hands"></i> Red Social de Artesanos
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/feed">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/messages">
+                            <i class="fas fa-envelope"></i> Mensajes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/notifications">
+                            <i class="fas fa-bell"></i> Notificaciones
+                            <span class="badge bg-primary ms-1" id="notificationBadge" style="display: none;">0</span>
+                        </a>
+                    </li>
+                </ul>
+                <!-- Barra de búsqueda -->
+                <form class="d-flex mx-auto search-form" id="searchForm">
+                    <div class="input-group">
+                        <i class="fas fa-search"></i>
+                        <input type="search" class="form-control" id="searchInput" placeholder="Buscar artesanos..." aria-label="Buscar" autocomplete="off">
+                    </div>
+                </form>
+                <div class="d-flex">
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                            <img src="/img/default-avatar.png" alt="Avatar" class="rounded-circle" width="32" height="32">
+                            <span class="ms-2" id="userName">Usuario</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-5 mt-5">
+        <div class="row">
+            <!-- Feed Content -->
+            <div class="col-md-10 mx-auto">
+                <!-- Create Post -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form id="createPostForm">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="postTitle" placeholder="Título de tu publicación" required>
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" id="postDescription" rows="2" placeholder="¿Qué estás creando hoy? Comparte tu arte con la comunidad..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <select class="form-control" id="albumSelect" required>
+                                    <option value="">Seleccionar álbum...</option>
+                                </select>
+                                <button type="button" class="btn btn-link mt-1" id="createAlbumBtn">
+                                    <i class="fas fa-plus"></i> Crear nuevo álbum
+                                </button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button type="button" class="btn btn-outline-primary me-2" id="uploadImageBtn">
+                                        <i class="fas fa-image"></i> Agregar Imagen
+                                    </button>
+                                    <input type="file" id="postImage" accept="image/*" style="display: none;" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="submitPostBtn" disabled>
+                                    <i class="fas fa-paper-plane"></i> Publicar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modal para crear álbum -->
+                <div class="modal fade" id="createAlbumModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Crear nuevo álbum</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="createAlbumForm">
+                                    <div class="mb-3">
+                                        <label for="albumTitle" class="form-label">Título del álbum</label>
+                                        <input type="text" class="form-control" id="albumTitle" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="albumType" class="form-label">Tipo de álbum</label>
+                                        <select class="form-control" id="albumType">
+                                            <option value="normal">Normal</option>
+                                            <option value="portfolio">Portfolio</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary" id="saveAlbumBtn">Crear álbum</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posts Feed -->
+                <div id="postsFeed">
+                    <!-- Los posts se cargarán dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Template (Hidden) -->
+    <template id="postTemplate">
+        <div class="card mb-4 post-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <img src="" alt="User Avatar" class="post-avatar me-3">
+                    <div>
+                        <h6 class="mb-0 post-author"></h6>
+                        <small class="text-muted post-date"></small>
+                        <small class="text-muted d-block mt-1 post-album"></small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="post-title mb-2"></h5>
+                <p class="post-description mb-3"></p>
+                <div class="post-image-container">
+                    <img src="" alt="Post Image" class="post-image" style="display: none;">
+                </div>
+                <div class="post-actions mt-3">
+                    <button class="btn btn-outline-primary btn-sm comment-btn">
+                        <i class="fas fa-comment"></i> <span class="comments-count">0</span> Comentarios
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm share-btn" data-bs-toggle="modal" data-bs-target="#shareModal">
+                        <i class="fas fa-share"></i> Compartir
+                    </button>
+                </div>
+                <div class="comments-section mt-3" style="display: none;">
+                    <div class="comments-list">
+                        <!-- Los comentarios se cargarán dinámicamente -->
+                    </div>
+                    <form class="comment-form mt-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Escribe un comentario...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal de Compartir Mejorado -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareModalLabel">
+                        <i class="fas fa-share-alt me-2"></i>Compartir publicación
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Vista previa de la publicación -->
+                    <div class="share-preview mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex align-items-center">
+                                <img src="" alt="User Avatar" class="rounded-circle me-2" width="32" height="32" id="sharePreviewAvatar">
+                                <div>
+                                    <h6 class="mb-0" id="sharePreviewAuthor"></h6>
+                                    <small class="text-muted" id="sharePreviewAlbum"></small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title" id="sharePreviewTitle"></h6>
+                                <p class="card-text" id="sharePreviewDescription"></p>
+                                <div class="share-preview-image-container text-center">
+                                    <img src="" alt="Preview" class="img-fluid rounded" id="sharePreviewImage" style="max-height: 200px; display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de compartir -->
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de compartir</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="shareType" id="shareImage" value="image" checked>
+                            <label class="btn btn-outline-primary" for="shareImage">
+                                <i class="fas fa-image me-2"></i>Compartir imagen
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="shareType" id="shareAlbum" value="album">
+                            <label class="btn btn-outline-primary" for="shareAlbum">
+                                <i class="fas fa-images me-2"></i>Compartir álbum completo
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Búsqueda de usuarios -->
+                    <div class="mb-3">
+                        <label class="form-label">Buscar usuarios</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="searchUsersInput" placeholder="Buscar por nombre o tipo de artesanía...">
+                        </div>
+                    </div>
+
+                    <!-- Lista de usuarios seleccionados -->
+                    <div class="mb-3">
+                        <label class="form-label">Usuarios seleccionados <span class="text-muted">(<span id="selectedCount">0</span>)</span></label>
+                        <div class="selected-users-list mb-2" id="selectedUsersList">
+                            <!-- Usuarios seleccionados se mostrarán aquí -->
+                        </div>
+                    </div>
+
+                    <!-- Lista de usuarios disponibles -->
+                    <div class="mb-3">
+                        <label class="form-label">Usuarios disponibles</label>
+                        <div class="users-list border rounded" style="max-height: 300px; overflow-y: auto;" id="usersList">
+                            <!-- La lista de usuarios se cargará dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmShareBtn" disabled>
+                        <i class="fas fa-share me-2"></i>Compartir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template para comentarios -->
+    <template id="commentTemplate">
+        <div class="comment-item mb-2">
+            <div class="d-flex">
+                <img src="" alt="User Avatar" class="comment-avatar me-2">
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <strong class="comment-author"></strong>
+                        <small class="text-muted comment-date"></small>
+                    </div>
+                    <p class="comment-text mb-1"></p>
+                    <div class="comment-actions">
+                        <button class="btn btn-link btn-sm edit-comment-btn" style="display: none;">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn btn-link btn-sm delete-comment-btn" style="display: none;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template para usuarios en el modal de compartir -->
+    <template id="userTemplate">
+        <div class="user-item d-flex align-items-center p-3 border-bottom user-selectable" data-user-id="">
+            <div class="form-check me-3">
+                <input class="form-check-input user-checkbox" type="checkbox" value="">
+            </div>
+            <img src="" alt="User Avatar" class="user-avatar rounded-circle me-3" width="40" height="40">
+            <div class="user-info flex-grow-1">
+                <h6 class="mb-0 user-name"></h6>
+                <small class="text-muted user-craft"></small>
+            </div>
+            <div class="user-actions">
+                <button class="btn btn-sm btn-outline-primary select-user-btn">
+                    <i class="fas fa-plus"></i> Seleccionar
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template para usuarios seleccionados -->
+    <template id="selectedUserTemplate">
+        <div class="selected-user-item d-inline-block me-2 mb-2">
+            <div class="d-flex align-items-center bg-light rounded-pill px-3 py-2">
+                <img src="" alt="User Avatar" class="selected-user-avatar rounded-circle me-2" width="24" height="24">
+                <span class="selected-user-name me-2"></span>
+                <button class="btn btn-sm btn-outline-danger remove-user-btn" data-user-id="">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal de Resultados de Búsqueda -->
+    <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-labelledby="searchResultsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchResultsModalLabel">
+                        <i class="fas fa-search me-2"></i>Resultados de búsqueda
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group" id="searchResultsList">
+                        <!-- Los resultados se cargarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template para resultados de búsqueda -->
+    <template id="searchResultTemplate">
+        <div class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="" alt="Avatar" class="rounded-circle me-3 search-result-avatar" width="50" height="50">
+                    <div>
+                        <h6 class="mb-1 search-result-name"></h6>
+                        <small class="text-muted search-result-type"></small>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm add-friend-btn" data-usuario-id="">
+                    <i class="fas fa-user-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Toast Container for Notifications -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/views/feed/js/feed.js"></script>
+</body>
+</html> 
