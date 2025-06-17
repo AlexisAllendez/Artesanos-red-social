@@ -234,8 +234,7 @@ function gracefulShutdown(signal) {
 async function startServer() {
     try {
         await testConnection();
-        const desiredPort = process.env.PORT || 3000;
-        const PORT = await findAvailablePort(desiredPort);
+        const PORT = process.env.PORT || 3000;
         
         server.listen(PORT, () => {
             console.log(` Servidor corriendo en http://localhost:${PORT}`);
