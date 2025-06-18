@@ -133,7 +133,7 @@ const register = async (req, res) => {
             });
         }
 
-        const { email, password, nombre, apellido } = req.body;
+        const { email, password, nombre, apellido, artType, descripcion, intereses, antecedentes } = req.body;
         const avatar = req.file ? `/uploads/avatars/${req.file.filename}` : null;
 
         // Verificar si el email ya está registrado
@@ -153,10 +153,10 @@ const register = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Crear el usuario
+        // Crear el usuario con todos los campos
         const [result] = await db.query(
-            'INSERT INTO usuarios (email, password, nombre, apellido, avatar, estado) VALUES (?, ?, ?, ?, ?, ?)',
-            [email, hashedPassword, nombre, apellido, avatar, 'activo']
+            'INSERT INTO usuarios (email, password, nombre, apellido, tipo_artesania, descripcion, intereses, antecedentes, avatar, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [email, hashedPassword, nombre, apellido, artType, descripcion || null, intereses || null, antecedentes || null, avatar, 'activo']
         );
 
         // Generar token
@@ -186,6 +186,10 @@ const register = async (req, res) => {
                 email,
                 nombre,
                 apellido,
+                tipo_artesania: artType,
+                descripcion,
+                intereses,
+                antecedentes,
                 avatar
             }
         });
