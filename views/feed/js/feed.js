@@ -949,6 +949,7 @@ async function handleShareConfirm() {
         const selectedUsersArray = Array.from(selectedUsers);
         let successCount = 0;
         let errorCount = 0;
+        let errorMessages = [];
         
         console.log('🔍 Debug: Procesando', selectedUsersArray.length, 'usuarios...');
         
@@ -984,21 +985,29 @@ async function handleShareConfirm() {
                     const errorData = await response.json();
                     console.log('🔍 Debug: Error en respuesta:', errorData);
                     errorCount++;
+                    errorMessages.push(`Usuario ${userId}: ${errorData.message || 'Error desconocido'}`);
                 }
             } catch (error) {
                 console.error('🔍 Debug: Error al compartir con usuario:', userId, error);
                 errorCount++;
+                errorMessages.push(`Usuario ${userId}: Error de conexión`);
             }
         }
         
         console.log('🔍 Debug: Resultado final - Éxitos:', successCount, 'Errores:', errorCount);
+        console.log('🔍 Debug: Mensajes de error:', errorMessages);
         
         // Mostrar resultado
         if (successCount > 0) {
             const shareTypeText = currentShareType === 'image' ? 'imagen' : 'álbum';
-            const message = errorCount > 0 
-                ? `Compartido exitosamente con ${successCount} usuarios. ${errorCount} errores.`
-                : `¡${shareTypeText} compartido exitosamente con ${successCount} usuario${successCount > 1 ? 's' : ''}!`;
+            let message = `¡${shareTypeText} compartido exitosamente con ${successCount} usuario${successCount > 1 ? 's' : ''}!`;
+            
+            if (errorCount > 0) {
+                message += ` ${errorCount} error${errorCount > 1 ? 'es' : ''}.`;
+                if (errorMessages.length > 0) {
+                    message += ` Errores: ${errorMessages.slice(0, 2).join(', ')}${errorMessages.length > 2 ? '...' : ''}`;
+                }
+            }
             
             window.AppAPI.showToast({
                 title: '¡Éxito!',
@@ -1045,7 +1054,10 @@ async function handleShareConfirm() {
             // Limpiar estado del modal
             clearShareModalState();
         } else {
-            throw new Error('No se pudo compartir con ningún usuario');
+            const errorMessage = errorMessages.length > 0 
+                ? `Errores: ${errorMessages.join(', ')}`
+                : 'No se pudo compartir con ningún usuario';
+            throw new Error(errorMessage);
         }
         
     } catch (error) {
@@ -1174,10 +1186,22 @@ function createSearchResultElement(result) {
             break;
     }
     
+    // Manejar avatar con fallback
+    const avatarSrc = result.avatar || '/uploads/avatars/default-avatar.png';
+    const avatarHtml = `
+        <img src="${avatarSrc}" 
+             alt="Avatar" 
+             class="rounded-circle me-3" 
+             width="50" 
+             height="50"
+             onerror="this.src='/uploads/avatars/default-avatar.png'; this.onerror=null;"
+             style="object-fit: cover;">
+    `;
+    
     div.innerHTML = `
         <div class="card-body">
             <div class="d-flex align-items-center">
-                <img src="${result.avatar || '/img/default-avatar.png'}" alt="Avatar" class="rounded-circle me-3" width="50" height="50">
+                ${avatarHtml}
                 <div class="flex-grow-1">
                     <h6 class="mb-1">${result.nombre} ${result.apellido}</h6>
                     <p class="mb-1 text-muted">${result.tipo_artesania || 'Artesano'}</p>

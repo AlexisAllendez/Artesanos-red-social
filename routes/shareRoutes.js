@@ -13,6 +13,8 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
         const { targetUserId } = req.body;
         const userId = req.user.id;
         
+        console.log('🔍 Debug: Compartir imagen - Datos recibidos:', { imageId, targetUserId, userId });
+        
         if (!targetUserId) {
             return res.status(400).json({
                 success: false,
@@ -22,6 +24,8 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
         
         // Verificar que la imagen existe y pertenece al usuario
         const image = await Imagen.obtenerPorId(imageId);
+        console.log('🔍 Debug: Imagen encontrada:', image ? 'Sí' : 'No');
+        
         if (!image) {
             return res.status(404).json({
                 success: false,
@@ -31,6 +35,9 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
         
         // Verificar que el usuario es propietario de la imagen
         const album = await Album.obtenerPorId(image.album_id);
+        console.log('🔍 Debug: Álbum encontrado:', album ? 'Sí' : 'No');
+        console.log('🔍 Debug: Propietario del álbum:', album?.usuario_id, 'Usuario actual:', userId);
+        
         if (!album || album.usuario_id !== userId) {
             return res.status(403).json({
                 success: false,
@@ -40,6 +47,8 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
         
         // Verificar que el usuario destino existe
         const targetUser = await Usuario.buscarPorId(targetUserId);
+        console.log('🔍 Debug: Usuario destino encontrado:', targetUser ? 'Sí' : 'No');
+        
         if (!targetUser) {
             return res.status(404).json({
                 success: false,
@@ -63,6 +72,8 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
             [userId, targetUserId, targetUserId, userId]
         );
         
+        console.log('🔍 Debug: Amistad encontrada:', friendship.length > 0 ? 'Sí' : 'No');
+        
         if (friendship.length === 0) {
             return res.status(403).json({
                 success: false,
@@ -72,6 +83,8 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
         
         // Verificar si ya está compartida
         const alreadyShared = await Imagen.verificarCompartida(imageId, targetUserId);
+        console.log('🔍 Debug: Ya compartida:', alreadyShared ? 'Sí' : 'No');
+        
         if (alreadyShared) {
             return res.status(400).json({
                 success: false,
@@ -81,6 +94,7 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
         
         // Crear álbum compartido si no existe
         const existingAlbum = await Album.buscarPorTipoYUsuario(targetUserId, 'compartido', `${req.user.nombre} ${req.user.apellido}`);
+        console.log('🔍 Debug: Álbum compartido existente:', existingAlbum ? 'Sí' : 'No');
         
         let albumId;
         if (existingAlbum) {
@@ -92,11 +106,15 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
                 titulo: `Álbum compartido con ${req.user.nombre} ${req.user.apellido}`,
                 tipo: 'compartido'
             };
+            console.log('🔍 Debug: Creando nuevo álbum compartido:', newAlbumData);
             albumId = await Album.crear(newAlbumData);
+            console.log('🔍 Debug: Nuevo álbum creado con ID:', albumId);
         }
         
         // Compartir la imagen usando el modelo
+        console.log('🔍 Debug: Compartiendo imagen con datos:', { imageId, targetUserId, albumId });
         await Imagen.compartir(imageId, targetUserId, albumId);
+        console.log('🔍 Debug: Imagen compartida exitosamente');
         
         // Enviar notificación en tiempo real
         const notificationData = {
@@ -108,17 +126,20 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
             fecha: new Date()
         };
         
-        req.io.to(`user_${targetUserId}`).emit('imagen_compartida', notificationData);
+        if (req.io) {
+            req.io.to(`user_${targetUserId}`).emit('imagen_compartida', notificationData);
+            console.log('🔍 Debug: Notificación enviada a usuario:', targetUserId);
+        }
         
         res.json({
             success: true,
             message: 'Imagen compartida exitosamente'
         });
     } catch (error) {
-        console.error('Error al compartir imagen:', error);
+        console.error('🔍 Debug: Error detallado al compartir imagen:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al compartir imagen'
+            message: 'Error al compartir imagen: ' + error.message
         });
     }
 });
