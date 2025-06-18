@@ -137,31 +137,9 @@ router.post('/api/share/image/:imageId', isAuthenticated, async (req, res) => {
         });
     } catch (error) {
         console.error('🔍 Debug: Error detallado al compartir imagen:', error);
-        console.error('🔍 Debug: Stack trace:', error.stack);
-        console.error('🔍 Debug: Error code:', error.code);
-        console.error('🔍 Debug: Error sqlMessage:', error.sqlMessage);
-        
-        // Determinar el tipo de error
-        let errorMessage = 'Error al compartir imagen';
-        
-        if (error.code === 'ER_NO_SUCH_TABLE') {
-            errorMessage = 'Error: Tabla de base de datos no encontrada. Verifica que todas las tablas se crearon correctamente.';
-        } else if (error.code === 'ER_BAD_FIELD_ERROR') {
-            errorMessage = 'Error: Campo de base de datos no encontrado. Verifica la estructura de la base de datos.';
-        } else if (error.code === 'ER_DUP_ENTRY') {
-            errorMessage = 'Error: La imagen ya está compartida con este usuario.';
-        } else if (error.message) {
-            errorMessage = `Error al compartir imagen: ${error.message}`;
-        }
-        
         res.status(500).json({
             success: false,
-            message: errorMessage,
-            debug: process.env.NODE_ENV === 'development' ? {
-                error: error.message,
-                code: error.code,
-                sqlMessage: error.sqlMessage
-            } : undefined
+            message: 'Error al compartir imagen: ' + error.message
         });
     }
 });

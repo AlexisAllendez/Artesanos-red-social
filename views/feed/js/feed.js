@@ -201,90 +201,87 @@ function renderPosts() {
 }
 
 function createPostElement(post) {
-    const postCard = document.createElement('div');
-    postCard.className = 'card mb-4 post-card';
-    postCard.setAttribute('data-post-id', post.id);
+    const template = document.getElementById('postTemplate');
+    if (!template) return document.createElement('div');
     
-    // Manejar avatar con fallback
-    const avatarSrc = post.avatar || '/uploads/avatars/default-avatar.png';
-    const avatarHtml = `
-        <img src="${avatarSrc}" 
-             alt="Avatar" 
-             class="rounded-circle me-2" 
-             width="40" 
-             height="40"
-             onerror="this.src='/uploads/avatars/default-avatar.png'; this.onerror=null;"
-             style="object-fit: cover;">
-    `;
+    const clone = template.content.cloneNode(true);
     
-    // Manejar imagen del post con fallback
-    const imageSrc = post.archivo || '/uploads/posts/default-image.png';
-    const imageHtml = `
-        <img src="${imageSrc}" 
-             class="card-img-top post-image" 
-             alt="${post.titulo || 'Imagen del post'}"
-             onerror="this.src='/uploads/posts/default-image.png'; this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';"
-             style="object-fit: cover; max-height: 400px;">
-        <div class="card-img-top d-none" style="height: 200px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #6c757d;">
-            <i class="fas fa-image fa-3x"></i>
-        </div>
-    `;
+    // Llenar datos del post
+    const avatar = clone.querySelector('.post-avatar');
+    const author = clone.querySelector('.post-author');
+    const date = clone.querySelector('.post-date');
+    const album = clone.querySelector('.post-album');
+    const title = clone.querySelector('.post-title');
+    const description = clone.querySelector('.post-description');
+    const image = clone.querySelector('.post-image');
+    const commentsCount = clone.querySelector('.comments-count');
     
-    postCard.innerHTML = `
-        <div class="card-header d-flex align-items-center">
-            ${avatarHtml}
-            <div class="flex-grow-1">
-                <h6 class="mb-0">${post.nombre} ${post.apellido}</h6>
-                <small class="text-muted">${formatDate(post.fecha_subida)}</small>
-            </div>
-            <div class="dropdown">
-                <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-ellipsis-h"></i>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="showShareModal(${JSON.stringify(post).replace(/"/g, '&quot;')})">
-                        <i class="fas fa-share"></i> Compartir
-                    </a></li>
-                    ${post.usuario_id === window.currentUser?.id ? `
-                        <li><a class="dropdown-item" href="#" onclick="deletePost(${post.id})">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </a></li>
-                    ` : ''}
-                </ul>
-            </div>
-        </div>
-        ${imageHtml}
-        <div class="card-body">
-            <h5 class="card-title">${post.titulo || 'Sin título'}</h5>
-            <p class="card-text">${post.descripcion || 'Sin descripción'}</p>
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleComments(this.closest('.post-card'), ${post.id})">
-                        <i class="fas fa-comment"></i> Comentarios
-                    </button>
-                    <button type="button" class="btn btn-outline-success btn-sm" onclick="showShareModal(${JSON.stringify(post).replace(/"/g, '&quot;')})">
-                        <i class="fas fa-share"></i> Compartir
-                    </button>
-                </div>
-                <small class="text-muted">Álbum: ${post.album_titulo || 'Sin álbum'}</small>
-            </div>
-        </div>
-        <div class="comments-section" style="display: none;">
-            <div class="card-footer">
-                <div class="comments-container"></div>
-                <form class="comment-form mt-3" onsubmit="handleCommentSubmit(event, ${post.id})">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Escribe un comentario..." required>
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    `;
+    if (avatar) avatar.src = post.avatar || '/img/default-avatar.png';
+    if (author) author.textContent = `${post.nombre} ${post.apellido}`;
+    if (date) date.textContent = formatDate(post.fecha_subida);
+    if (album) album.textContent = `Álbum: ${post.album_titulo}`;
+    if (title) title.textContent = post.titulo;
+    if (description) description.textContent = post.descripcion;
+    if (commentsCount) commentsCount.textContent = post.comments_count || 0;
     
-    return postCard;
+    if (post.archivo) {
+        if (image) {
+            image.src = post.archivo;
+            image.style.display = 'block';
+        }
+    }
+    
+    // Configurar eventos del post
+    const postCard = clone.querySelector('.post-card');
+    const commentBtn = clone.querySelector('.comment-btn');
+    const shareBtn = clone.querySelector('.share-btn');
+    
+    // Agregar el ID del post al elemento para poder identificarlo
+    if (postCard) {
+        postCard.setAttribute('data-post-id', post.id);
+    }
+    
+    if (commentBtn) {
+        commentBtn.addEventListener('click', () => toggleComments(postCard, post.id));
+    }
+    
+    // Configurar botón de compartir de forma asíncrona
+    if (shareBtn) {
+        // Por defecto mostrar el botón, pero deshabilitarlo si no es propietario
+        shareBtn.style.display = 'inline-block';
+        shareBtn.disabled = true;
+        shareBtn.innerHTML = '<i class="fas fa-share"></i> Cargando...';
+        
+        // Obtener usuario y configurar botón
+        getCurrentUser().then(user => {
+            if (user && user.id == post.usuario_id) {
+                // Usuario es propietario - habilitar compartir
+                shareBtn.disabled = false;
+                shareBtn.innerHTML = '<i class="fas fa-share"></i> Compartir';
+                shareBtn.title = 'Compartir esta publicación';
+                shareBtn.addEventListener('click', () => showShareModal(post));
+            } else {
+                // Usuario no es propietario - deshabilitar y cambiar texto
+                shareBtn.disabled = true;
+                shareBtn.innerHTML = '<i class="fas fa-share"></i> Solo propietario';
+                shareBtn.title = 'Solo puedes compartir tus propias publicaciones';
+            }
+        }).catch(error => {
+            window.AppAPI.showToast({
+                title: 'Error',
+                message: error.message || 'Error al verificar permisos',
+                type: 'error'
+            });
+        });
+    }
+    
+    // Configurar formulario de comentarios
+    const commentForm = clone.querySelector('.comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', (e) => handleCommentSubmit(e, post.id));
+    }
+    
+    return clone;
 }
 
 function addPostToFeed(post) {
@@ -311,8 +308,8 @@ async function handleCreatePost(e) {
             message: 'Por favor completa todos los campos requeridos',
             type: 'error'
         });
-        return;
-    }
+            return;
+        }
 
     formData.append('titulo', title);
     formData.append('descripcion', description);
@@ -335,18 +332,14 @@ async function handleCreatePost(e) {
             e.target.reset();
             document.getElementById('submitPostBtn').disabled = true;
             
-            // Mostrar mensaje de éxito
+            // Agregar post al feed
+            addPostToFeed(data.post);
+            
             window.AppAPI.showToast({
                 title: '¡Éxito!',
-                message: 'Tu publicación se ha subido correctamente. Recargando página...',
+                message: 'Tu publicación se ha subido correctamente',
                 type: 'success'
             });
-            
-            // Recargar la página después de 2 segundos
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
-            
         } else {
             const error = await response.json();
             window.AppAPI.showToast({
@@ -432,18 +425,14 @@ async function handleCreateAlbum() {
             // Limpiar formulario
             document.getElementById('createAlbumForm').reset();
             
-            // Mostrar mensaje de éxito
+            // Recargar álbumes
+            await loadAlbums();
+            
             window.AppAPI.showToast({
                 title: '¡Éxito!',
-                message: 'Álbum creado correctamente. Recargando página...',
+                message: 'Álbum creado correctamente',
                 type: 'success'
             });
-            
-            // Recargar la página después de 2 segundos
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
-            
         } else {
             const error = await response.json();
             window.AppAPI.showToast({
