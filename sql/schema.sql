@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS albumes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     titulo VARCHAR(100) NOT NULL,
-    tipo ENUM('normal', 'amistad', 'portfolio') DEFAULT 'normal',
+    tipo ENUM('normal', 'amistad', 'portfolio', 'compartido') DEFAULT 'normal',
     fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
