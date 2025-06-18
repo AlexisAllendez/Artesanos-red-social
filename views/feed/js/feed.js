@@ -311,8 +311,8 @@ async function handleCreatePost(e) {
             message: 'Por favor completa todos los campos requeridos',
             type: 'error'
         });
-            return;
-        }
+        return;
+    }
 
     formData.append('titulo', title);
     formData.append('descripcion', description);
@@ -335,14 +335,18 @@ async function handleCreatePost(e) {
             e.target.reset();
             document.getElementById('submitPostBtn').disabled = true;
             
-            // Agregar post al feed
-            addPostToFeed(data.post);
-            
+            // Mostrar mensaje de éxito
             window.AppAPI.showToast({
                 title: '¡Éxito!',
-                message: 'Tu publicación se ha subido correctamente',
+                message: 'Tu publicación se ha subido correctamente. Recargando página...',
                 type: 'success'
             });
+            
+            // Recargar la página después de 2 segundos
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+            
         } else {
             const error = await response.json();
             window.AppAPI.showToast({
@@ -428,14 +432,18 @@ async function handleCreateAlbum() {
             // Limpiar formulario
             document.getElementById('createAlbumForm').reset();
             
-            // Recargar álbumes
-            await loadAlbums();
-            
+            // Mostrar mensaje de éxito
             window.AppAPI.showToast({
                 title: '¡Éxito!',
-                message: 'Álbum creado correctamente',
+                message: 'Álbum creado correctamente. Recargando página...',
                 type: 'success'
             });
+            
+            // Recargar la página después de 2 segundos
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+            
         } else {
             const error = await response.json();
             window.AppAPI.showToast({
