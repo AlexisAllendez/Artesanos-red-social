@@ -196,7 +196,7 @@ class Amistad {
     // Buscar usuarios para agregar como amigos
     static async buscarUsuarios(termino, usuario_id, limite = 10) {
         const query = `
-            SELECT u.id, u.nombre, u.apellido, u.avatar, u.tipo_artesania,
+            SELECT DISTINCT u.id, u.nombre, u.apellido, u.avatar, u.tipo_artesania,
                    CASE 
                        WHEN a.id IS NOT NULL THEN a.estado
                        ELSE 'no_solicitud'
@@ -215,7 +215,7 @@ class Amistad {
                 u.apellido LIKE ? OR 
                 u.tipo_artesania LIKE ?
             )
-            GROUP BY u.id
+            ORDER BY u.nombre, u.apellido
             LIMIT ?
         `;
         const terminoBusqueda = `%${termino}%`;

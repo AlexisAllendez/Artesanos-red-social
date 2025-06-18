@@ -23,7 +23,7 @@ class Imagen {
         }
     }
 
-    // Obtener imagen por ID con sus etiquetas
+    // Obtener imagen por ID
     static async obtenerPorId(id) {
         const query = `
             SELECT i.*, a.titulo as album_titulo, u.nombre, u.apellido,
@@ -34,7 +34,7 @@ class Imagen {
             LEFT JOIN imagen_etiqueta ie ON i.id = ie.imagen_id
             LEFT JOIN etiquetas e ON ie.etiqueta_id = e.id
             WHERE i.id = ?
-            GROUP BY i.id
+            GROUP BY i.id, i.album_id, i.titulo, i.descripcion, i.archivo, i.es_publica, i.fecha_subida, a.titulo, u.nombre, u.apellido
         `;
         try {
             const [rows] = await db.query(query, [id]);
@@ -66,7 +66,7 @@ class Imagen {
             LEFT JOIN etiquetas e ON ie.etiqueta_id = e.id
             LEFT JOIN comentarios c ON i.id = c.imagen_id
             WHERE i.album_id = ?
-            GROUP BY i.id
+            GROUP BY i.id, i.album_id, i.titulo, i.descripcion, i.archivo, i.es_publica, i.fecha_subida
             ORDER BY i.fecha_subida DESC
         `;
         try {
@@ -176,7 +176,7 @@ class Imagen {
             LEFT JOIN imagen_etiqueta ie ON i.id = ie.imagen_id
             LEFT JOIN etiquetas e ON ie.etiqueta_id = e.id
             WHERE c.compartido_con = ?
-            GROUP BY i.id
+            GROUP BY i.id, i.album_id, i.titulo, i.descripcion, i.archivo, i.es_publica, i.fecha_subida, a.titulo, u.nombre, u.apellido
             ORDER BY c.fecha DESC
         `;
         try {
@@ -208,7 +208,7 @@ class Imagen {
             JOIN usuarios u ON a.usuario_id = u.id
             LEFT JOIN etiquetas e ON ie.etiqueta_id = e.id
             WHERE ie.etiqueta_id = ?
-            GROUP BY i.id
+            GROUP BY i.id, i.album_id, i.titulo, i.descripcion, i.archivo, i.es_publica, i.fecha_subida, a.titulo, u.nombre, u.apellido
             ORDER BY i.fecha_subida DESC
         `;
         try {

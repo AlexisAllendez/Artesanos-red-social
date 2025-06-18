@@ -70,7 +70,7 @@ class Album {
             LEFT JOIN imagenes i ON a.id = i.album_id
             JOIN usuarios u ON a.usuario_id = u.id
             WHERE a.usuario_id = ?
-            GROUP BY a.id
+            GROUP BY a.id, a.usuario_id, a.titulo, a.tipo, a.fecha_creacion, u.nombre, u.apellido
             ORDER BY a.id DESC
         `;
         try {
@@ -125,7 +125,7 @@ class Album {
             JOIN imagenes i ON a.id = i.album_id
             JOIN compartidos c ON i.id = c.imagen_id
             WHERE c.compartido_con = ?
-            GROUP BY a.id
+            GROUP BY a.id, a.usuario_id, a.titulo, a.tipo, a.fecha_creacion, u.nombre, u.apellido
             ORDER BY a.fecha_creacion DESC
         `;
         try {
@@ -156,7 +156,7 @@ class Album {
             JOIN usuarios u ON a.usuario_id = u.id
             LEFT JOIN imagenes i ON a.id = i.album_id
             WHERE a.titulo LIKE ?
-            GROUP BY a.id
+            GROUP BY a.id, a.usuario_id, a.titulo, a.tipo, a.fecha_creacion, u.nombre, u.apellido
             ORDER BY a.fecha_creacion DESC
         `;
         try {

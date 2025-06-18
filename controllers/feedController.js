@@ -56,7 +56,7 @@ const getFeed = async (req, res) => {
                     WHERE comp.imagen_id = i.id AND comp.compartido_con = ?
                 )
             )
-            GROUP BY i.id
+            GROUP BY i.id, i.album_id, i.titulo, i.descripcion, i.archivo, i.es_publica, i.fecha_subida, a.titulo, a.usuario_id, u.nombre, u.apellido, u.avatar
             ORDER BY i.fecha_subida DESC
         `;
 
@@ -127,7 +127,7 @@ const getPosts = async (req, res) => {
                     WHERE comp.imagen_id = i.id AND comp.compartido_con = ?
                 )
             )
-            GROUP BY i.id
+            GROUP BY i.id, i.album_id, i.titulo, i.descripcion, i.archivo, i.es_publica, i.fecha_subida, a.titulo, a.usuario_id, u.nombre, u.apellido, u.avatar
             ORDER BY i.fecha_subida DESC
         `;
 
@@ -268,7 +268,7 @@ const getImageById = async (req, res) => {
                     WHERE comp.imagen_id = i.id AND comp.compartido_con = ?
                 )
             )
-            GROUP BY i.id
+            GROUP BY i.id, i.album_id, i.titulo, i.descripcion, i.archivo, i.es_publica, i.fecha_subida, a.titulo, a.usuario_id, u.nombre, u.apellido, u.avatar
         `;
 
         const [images] = await db.query(query, [userId, imageId, userId, userId, userId, userId]);
